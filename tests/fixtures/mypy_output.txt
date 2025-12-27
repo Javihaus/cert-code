@@ -1,0 +1,6 @@
+src/utils.py:15: error: Incompatible return value type (got "str", expected "int")  [return-value]
+src/utils.py:23: error: Argument 1 to "process" has incompatible type "str | None"; expected "str"  [arg-type]
+src/api/client.py:45: error: "HttpClient" has no attribute "post_json"  [attr-defined]
+src/api/client.py:67: error: Missing return statement  [return]
+src/models/user.py:12: error: Incompatible types in assignment (expression has type "None", variable has type "str")  [assignment]
+Found 5 errors in 3 files (checked 15 source files)

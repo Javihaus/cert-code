@@ -1,0 +1,52 @@
+diff --git a/src/utils.py b/src/utils.py
+new file mode 100644
+index 0000000..abc1234
+--- /dev/null
++++ b/src/utils.py
+@@ -0,0 +1,25 @@
++"""Utility functions for the application."""
++
++from typing import TypeVar, Callable
++
++T = TypeVar("T")
++
++
++def add(a: int, b: int) -> int:
++    """Add two integers together.
++
++    Args:
++        a: First integer
++        b: Second integer
++
++    Returns:
++        Sum of a and b
++    """
++    return a + b
++
++
++def identity(x: T) -> T:
++    """Return the input unchanged."""
++    return x
++
++
+diff --git a/tests/test_utils.py b/tests/test_utils.py
+new file mode 100644
+index 0000000..def5678
+--- /dev/null
++++ b/tests/test_utils.py
+@@ -0,0 +1,15 @@
++"""Tests for utility functions."""
++
++import pytest
++from src.utils import add, identity
++
++
++def test_add():
++    assert add(1, 2) == 3
++    assert add(-1, 1) == 0
++    assert add(0, 0) == 0
++
++
++def test_identity():
++    assert identity(42) == 42
++    assert identity("hello") == "hello"
