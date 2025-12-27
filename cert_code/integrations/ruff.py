@@ -139,9 +139,7 @@ class RuffIntegration:
         """Fallback parser for non-JSON output."""
         # Count lines as a rough estimate
         lines = [
-            line
-            for line in output.split("\n")
-            if line.strip() and not line.startswith("Found")
+            line for line in output.split("\n") if line.strip() and not line.startswith("Found")
         ]
         error_count = len(lines)
 

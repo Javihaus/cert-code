@@ -297,7 +297,7 @@ class CodeCollector:
                 # Check size limit
                 if total_size + len(content) > max_size:
                     remaining = max_size - total_size
-                    if remaining > 1000:
+                    if remaining >= 100:
                         content = content[:remaining] + "\n... (truncated)"
                     else:
                         break

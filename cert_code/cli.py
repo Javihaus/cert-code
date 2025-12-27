@@ -135,13 +135,24 @@ def submit(
     )
 
     try:
+        # Handle dry-run before creating collector (which requires API key)
+        if dry_run:
+            if diff:
+                _show_dry_run(task, diff, options, tool)
+            else:
+                from cert_code.analyzers.diff import get_diff_from_git
+
+                git_diff = get_diff_from_git(ref, base_ref)
+
+                if not git_diff.strip():
+                    console.print("[yellow]No changes found in commit[/yellow]")
+                    sys.exit(1)
+
+                _show_dry_run(task, git_diff, options, tool)
+            return
+
         with CodeCollector(cfg) as collector:
             if diff:
-                # Use provided diff
-                if dry_run:
-                    _show_dry_run(task, diff, options, tool)
-                    return
-
                 result = collector.from_diff(
                     task=task,
                     diff=diff,
@@ -157,10 +168,6 @@ def submit(
                 if not git_diff.strip():
                     console.print("[yellow]No changes found in commit[/yellow]")
                     sys.exit(1)
-
-                if dry_run:
-                    _show_dry_run(task, git_diff, options, tool)
-                    return
 
                 result = collector.from_commit(
                     task=task,
