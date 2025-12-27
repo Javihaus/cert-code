@@ -13,7 +13,7 @@ from __future__ import annotations
 import json
 import subprocess
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable
 
 from cert_code.models import Language, LintResults
 
@@ -58,10 +58,10 @@ DEFAULT_LINTERS: dict[Language, LinterConfig] = {
 
 
 def run_lint(
-    command: Optional[str] = None,
-    language: Optional[Language] = None,
+    command: str | None = None,
+    language: Language | None = None,
     timeout: int = 60,
-    cwd: Optional[str] = None,
+    cwd: str | None = None,
 ) -> LintResults:
     """
     Run linter and parse results.
@@ -118,8 +118,8 @@ def run_lint(
         )
 
     # Parse results
-    parser = _get_parser(tool)
-    return parser(output, returncode, tool)
+    parser_func = _get_parser(tool)
+    return parser_func(output, returncode, tool)
 
 
 def parse_ruff(output: str, returncode: int, tool: str) -> LintResults:
@@ -219,7 +219,7 @@ def parse_golangci(output: str, returncode: int, tool: str) -> LintResults:
                 }
             )
     except json.JSONDecodeError:
-        error_count = len([l for l in output.split("\n") if l.strip()])
+        error_count = len([line for line in output.split("\n") if line.strip()])
         return LintResults(
             passed=returncode == 0,
             error_count=error_count,
@@ -273,9 +273,12 @@ def parse_clippy(output: str, returncode: int, tool: str) -> LintResults:
     )
 
 
-def _get_parser(tool: str):
+LintParserFunc = Callable[[str, int, str], LintResults]
+
+
+def _get_parser(tool: str) -> LintParserFunc:
     """Get parser function for tool."""
-    parsers = {
+    parsers: dict[str, LintParserFunc] = {
         "ruff": parse_ruff,
         "eslint": parse_eslint,
         "golangci-lint": parse_golangci,

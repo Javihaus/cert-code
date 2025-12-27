@@ -12,7 +12,7 @@ from __future__ import annotations
 import re
 import subprocess
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable
 
 from cert_code.models import Language, TypeCheckResults
 
@@ -47,10 +47,10 @@ DEFAULT_TYPE_CHECKERS: dict[Language, TypeCheckerConfig] = {
 
 
 def run_typecheck(
-    command: Optional[str] = None,
-    language: Optional[Language] = None,
+    command: str | None = None,
+    language: Language | None = None,
     timeout: int = 120,
-    cwd: Optional[str] = None,
+    cwd: str | None = None,
 ) -> TypeCheckResults:
     """
     Run type checker and parse results.
@@ -107,8 +107,8 @@ def run_typecheck(
         )
 
     # Parse results
-    parser = _get_parser(tool)
-    return parser(output, returncode, tool)
+    parser_func = _get_parser(tool)
+    return parser_func(output, returncode, tool)
 
 
 def parse_mypy(output: str, returncode: int, tool: str) -> TypeCheckResults:
@@ -183,9 +183,12 @@ def parse_go_vet(output: str, returncode: int, tool: str) -> TypeCheckResults:
     )
 
 
-def _get_parser(tool: str):
+ParserFunc = Callable[[str, int, str], TypeCheckResults]
+
+
+def _get_parser(tool: str) -> ParserFunc:
     """Get parser function for tool."""
-    parsers = {
+    parsers: dict[str, ParserFunc] = {
         "mypy": parse_mypy,
         "tsc": parse_tsc,
         "go vet": parse_go_vet,

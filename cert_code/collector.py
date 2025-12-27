@@ -11,7 +11,6 @@ import logging
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
 
 from cert_code.analyzers.diff import get_diff_from_git, parse_diff
 from cert_code.analyzers.tests import run_tests
@@ -70,9 +69,9 @@ class CodeCollector:
         self,
         task: str,
         ref: str = "HEAD",
-        base_ref: Optional[str] = None,
-        options: Optional[CollectorOptions] = None,
-        tool: Optional[str] = None,
+        base_ref: str | None = None,
+        options: CollectorOptions | None = None,
+        tool: str | None = None,
     ) -> SubmitResult:
         """
         Create and submit trace from a git commit.
@@ -110,8 +109,8 @@ class CodeCollector:
         self,
         task: str,
         diff: str,
-        options: Optional[CollectorOptions] = None,
-        tool: Optional[str] = None,
+        options: CollectorOptions | None = None,
+        tool: str | None = None,
     ) -> SubmitResult:
         """
         Create and submit trace from a diff string.
@@ -275,7 +274,7 @@ class CodeCollector:
             logger.warning(f"Type check failed: {e}")
             return TypeCheckResults(passed=True, tool="failed")
 
-    def _load_context(self, context_files: Optional[list[str]]) -> Optional[str]:
+    def _load_context(self, context_files: list[str] | None) -> str | None:
         """Load context from specified files."""
         files = context_files or self.config.context_files
 
@@ -318,5 +317,5 @@ class CodeCollector:
     def __enter__(self) -> CodeCollector:
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args: object) -> None:
         self.close()

@@ -10,7 +10,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
-from typing import Any, Optional
+from typing import Any
 
 
 class Language(str, Enum):
@@ -101,10 +101,10 @@ class CodeArtifact:
     files_changed: list[str]
     language: Language
     diff_stats: DiffStats
-    raw_content: Optional[str] = None  # Full file content if single file
+    raw_content: str | None = None  # Full file content if single file
 
     @classmethod
-    def from_git_diff(cls, diff: str, language: Optional[Language] = None) -> CodeArtifact:
+    def from_git_diff(cls, diff: str, language: Language | None = None) -> CodeArtifact:
         """Parse a git diff into a CodeArtifact."""
         from cert_code.analyzers.diff import parse_diff
 
@@ -116,8 +116,8 @@ class CodeTask:
     """The task/intent for code generation."""
 
     description: str
-    conversation_id: Optional[str] = None
-    tool: Optional[str] = None  # "claude-code", "cursor", "copilot", etc.
+    conversation_id: str | None = None
+    tool: str | None = None  # "claude-code", "cursor", "copilot", etc.
 
 
 @dataclass
@@ -125,9 +125,9 @@ class CodeVerification:
     """Verification signals for generated code."""
 
     parseable: bool = True
-    tests: Optional[TestResults] = None
-    lint: Optional[LintResults] = None
-    typecheck: Optional[TypeCheckResults] = None
+    tests: TestResults | None = None
+    lint: LintResults | None = None
+    typecheck: TypeCheckResults | None = None
 
     @property
     def all_passed(self) -> bool:
@@ -138,9 +138,7 @@ class CodeVerification:
             return False
         if self.lint and not self.lint.passed:
             return False
-        if self.typecheck and not self.typecheck.passed:
-            return False
-        return True
+        return not (self.typecheck and not self.typecheck.passed)
 
 
 @dataclass
@@ -154,9 +152,9 @@ class CodeTrace:
     task: CodeTask
     artifact: CodeArtifact
     verification: CodeVerification
-    context: Optional[str] = None  # Existing codebase/docs for SGI
-    project_id: Optional[str] = None
-    trace_id: Optional[str] = None
+    context: str | None = None  # Existing codebase/docs for SGI
+    project_id: str | None = None
+    trace_id: str | None = None
     created_at: datetime = field(default_factory=datetime.utcnow)
     metadata: dict[str, Any] = field(default_factory=dict)
 

@@ -4,10 +4,11 @@ Jest integration for cert-code.
 Provides detailed parsing of Jest output.
 """
 
+from __future__ import annotations
+
 import json
 import subprocess
 from dataclasses import dataclass, field
-from typing import Optional
 
 from cert_code.models import TestResults
 
@@ -17,10 +18,10 @@ class JestTestCase:
     """A single Jest test case."""
 
     title: str
-    fullName: str
+    full_name: str  # fullName in JSON
     status: str  # passed, failed, pending
     duration: int = 0
-    failureMessages: list[str] = field(default_factory=list)
+    failure_messages: list[str] = field(default_factory=list)  # failureMessages in JSON
 
 
 @dataclass
@@ -29,20 +30,20 @@ class JestTestSuite:
 
     name: str
     tests: list[JestTestCase]
-    startTime: int = 0
-    endTime: int = 0
+    start_time: int = 0  # startTime in JSON
+    end_time: int = 0  # endTime in JSON
 
 
 @dataclass
 class JestReport:
     """Complete Jest test report."""
 
-    testSuites: list[JestTestSuite]
-    numPassedTests: int = 0
-    numFailedTests: int = 0
-    numPendingTests: int = 0
-    numTotalTests: int = 0
-    startTime: int = 0
+    test_suites: list[JestTestSuite]  # testSuites in JSON
+    num_passed_tests: int = 0  # numPassedTests in JSON
+    num_failed_tests: int = 0  # numFailedTests in JSON
+    num_pending_tests: int = 0  # numPendingTests in JSON
+    num_total_tests: int = 0  # numTotalTests in JSON
+    start_time: int = 0  # startTime in JSON
     success: bool = True
 
 
@@ -51,8 +52,8 @@ class JestIntegration:
 
     def __init__(
         self,
-        args: Optional[list[str]] = None,
-        cwd: Optional[str] = None,
+        args: list[str] | None = None,
+        cwd: str | None = None,
         timeout: int = 300,
         use_npm: bool = True,
     ):
@@ -63,10 +64,7 @@ class JestIntegration:
 
     def run(self) -> TestResults:
         """Run Jest and return results."""
-        if self.use_npm:
-            cmd = ["npm", "test", "--", "--json"]
-        else:
-            cmd = ["jest", "--json"]
+        cmd = ["npm", "test", "--", "--json"] if self.use_npm else ["jest", "--json"]
 
         cmd.extend(self.args)
 
@@ -102,7 +100,7 @@ class JestIntegration:
                 framework="jest",
             )
 
-    def _parse_json_output(self, output: str) -> Optional[JestReport]:
+    def _parse_json_output(self, output: str) -> JestReport | None:
         """Parse Jest JSON output."""
         try:
             # Find the JSON object in output (might be mixed with other output)
@@ -114,36 +112,36 @@ class JestIntegration:
 
             data = json.loads(output[json_start:json_end])
 
-            test_suites = []
+            suites = []
             for suite_data in data.get("testResults", []):
                 tests = []
                 for test in suite_data.get("assertionResults", []):
                     tests.append(
                         JestTestCase(
                             title=test.get("title", ""),
-                            fullName=test.get("fullName", ""),
+                            full_name=test.get("fullName", ""),
                             status=test.get("status", ""),
                             duration=test.get("duration", 0),
-                            failureMessages=test.get("failureMessages", []),
+                            failure_messages=test.get("failureMessages", []),
                         )
                     )
 
-                test_suites.append(
+                suites.append(
                     JestTestSuite(
                         name=suite_data.get("name", ""),
                         tests=tests,
-                        startTime=suite_data.get("startTime", 0),
-                        endTime=suite_data.get("endTime", 0),
+                        start_time=suite_data.get("startTime", 0),
+                        end_time=suite_data.get("endTime", 0),
                     )
                 )
 
             return JestReport(
-                testSuites=test_suites,
-                numPassedTests=data.get("numPassedTests", 0),
-                numFailedTests=data.get("numFailedTests", 0),
-                numPendingTests=data.get("numPendingTests", 0),
-                numTotalTests=data.get("numTotalTests", 0),
-                startTime=data.get("startTime", 0),
+                test_suites=suites,
+                num_passed_tests=data.get("numPassedTests", 0),
+                num_failed_tests=data.get("numFailedTests", 0),
+                num_pending_tests=data.get("numPendingTests", 0),
+                num_total_tests=data.get("numTotalTests", 0),
+                start_time=data.get("startTime", 0),
                 success=data.get("success", False),
             )
 
@@ -162,14 +160,14 @@ class JestIntegration:
         """Convert JestReport to TestResults."""
         # Calculate duration from test suites
         duration_ms = 0
-        for suite in report.testSuites:
-            duration_ms += suite.endTime - suite.startTime
+        for suite in report.test_suites:
+            duration_ms += suite.end_time - suite.start_time
 
         return TestResults(
-            passed=report.success and report.numFailedTests == 0,
-            total=report.numTotalTests,
-            failed=report.numFailedTests,
-            skipped=report.numPendingTests,
+            passed=report.success and report.num_failed_tests == 0,
+            total=report.num_total_tests,
+            failed=report.num_failed_tests,
+            skipped=report.num_pending_tests,
             duration_ms=duration_ms,
             output=output,
             framework="jest",

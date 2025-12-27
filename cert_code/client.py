@@ -13,7 +13,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from dataclasses import dataclass
-from typing import Any, Optional
+from typing import Any
 
 import httpx
 
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 class CertAPIError(Exception):
     """Error from CERT API."""
 
-    def __init__(self, status_code: int, message: str, details: Optional[dict] = None):
+    def __init__(self, status_code: int, message: str, details: dict[str, Any] | None = None):
         self.status_code = status_code
         self.message = message
         self.details = details or {}
@@ -38,9 +38,9 @@ class SubmitResult:
     """Result of trace submission."""
 
     success: bool
-    trace_id: Optional[str] = None
-    error: Optional[str] = None
-    evaluation: Optional[dict[str, Any]] = None
+    trace_id: str | None = None
+    error: str | None = None
+    evaluation: dict[str, Any] | None = None
 
 
 class CertClient:
@@ -143,7 +143,7 @@ class CertClient:
     def __enter__(self) -> CertClient:
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args: object) -> None:
         self.close()
 
 
@@ -227,5 +227,5 @@ class CertAsyncClient:
     async def __aenter__(self) -> CertAsyncClient:
         return self
 
-    async def __aexit__(self, *args) -> None:
+    async def __aexit__(self, *args: object) -> None:
         await self.close()

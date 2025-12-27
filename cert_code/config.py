@@ -13,7 +13,7 @@ import os
 import sys
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, Optional
+from typing import Any, Callable
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -31,11 +31,11 @@ class CertCodeConfig:
 
     # CERT API settings
     api_url: str = "https://cert-framework.dev/api/v1"
-    api_key: Optional[str] = None
+    api_key: str | None = None
 
     # Project settings
-    project_id: Optional[str] = None
-    project_name: Optional[str] = None
+    project_id: str | None = None
+    project_name: str | None = None
 
     # Default behavior
     auto_detect_language: bool = True
@@ -44,14 +44,14 @@ class CertCodeConfig:
     auto_run_typecheck: bool = False
 
     # Test configuration
-    test_command: Optional[str] = None  # e.g., "pytest", "npm test"
+    test_command: str | None = None  # e.g., "pytest", "npm test"
     test_timeout: int = 300  # seconds
 
     # Lint configuration
-    lint_command: Optional[str] = None  # e.g., "ruff check", "eslint"
+    lint_command: str | None = None  # e.g., "ruff check", "eslint"
 
     # Type check configuration
-    typecheck_command: Optional[str] = None  # e.g., "mypy", "tsc --noEmit"
+    typecheck_command: str | None = None  # e.g., "mypy", "tsc --noEmit"
 
     # Context settings
     context_files: list[str] = field(default_factory=list)  # Files to include as context
@@ -62,7 +62,7 @@ class CertCodeConfig:
     git_hook_type: str = "post-commit"  # post-commit, pre-push
 
     @classmethod
-    def load(cls, config_path: Optional[Path] = None) -> CertCodeConfig:
+    def load(cls, config_path: Path | None = None) -> CertCodeConfig:
         """
         Load configuration from multiple sources.
 
@@ -89,7 +89,7 @@ class CertCodeConfig:
         return cls(**config_dict)
 
     @classmethod
-    def _find_config_file(cls) -> Optional[Path]:
+    def _find_config_file(cls) -> Path | None:
         """Find config file by walking up from current directory."""
         current = Path.cwd()
 
@@ -152,15 +152,20 @@ class CertCodeConfig:
         """Load configuration from environment variables."""
         result: dict[str, Any] = {}
 
-        mappings = {
+        # Simple string mappings
+        string_mappings: dict[str, str] = {
             "API_URL": "api_url",
             "API_KEY": "api_key",
             "PROJECT_ID": "project_id",
             "PROJECT_NAME": "project_name",
             "TEST_COMMAND": "test_command",
-            "TEST_TIMEOUT": ("test_timeout", int),
             "LINT_COMMAND": "lint_command",
             "TYPECHECK_COMMAND": "typecheck_command",
+        }
+
+        # Mappings with converters
+        converter_mappings: dict[str, tuple[str, Callable[[str], Any]]] = {
+            "TEST_TIMEOUT": ("test_timeout", int),
             "AUTO_RUN_TESTS": ("auto_run_tests", lambda x: x.lower() in ("1", "true", "yes")),
             "AUTO_RUN_LINT": ("auto_run_lint", lambda x: x.lower() in ("1", "true", "yes")),
             "AUTO_RUN_TYPECHECK": (
@@ -169,16 +174,17 @@ class CertCodeConfig:
             ),
         }
 
-        for env_suffix, mapping in mappings.items():
+        for env_suffix, field_name in string_mappings.items():
             env_var = f"{ENV_PREFIX}{env_suffix}"
             value = os.environ.get(env_var)
-
             if value is not None:
-                if isinstance(mapping, tuple):
-                    field_name, converter = mapping
-                    result[field_name] = converter(value)
-                else:
-                    result[mapping] = value
+                result[field_name] = value
+
+        for env_suffix, (field_name, converter) in converter_mappings.items():
+            env_var = f"{ENV_PREFIX}{env_suffix}"
+            value = os.environ.get(env_var)
+            if value is not None:
+                result[field_name] = converter(value)
 
         return result
 

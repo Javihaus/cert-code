@@ -12,7 +12,7 @@ from __future__ import annotations
 import os
 import re
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 from cert_code.models import Language
 
@@ -57,7 +57,7 @@ PROJECT_INDICATORS: dict[str, Language] = {
 }
 
 
-def detect_from_shebang(content: str) -> Optional[Language]:
+def detect_from_shebang(content: str) -> Language | None:
     """Detect language from shebang line."""
     if not content.startswith("#!"):
         return None
@@ -71,7 +71,7 @@ def detect_from_shebang(content: str) -> Optional[Language]:
     return None
 
 
-def detect_from_filename(filename: str) -> Optional[Language]:
+def detect_from_filename(filename: str) -> Language | None:
     """Detect language from filename (without extension)."""
     basename = os.path.basename(filename)
     name_without_ext = basename.rsplit(".", 1)[0] if "." in basename else basename
@@ -79,7 +79,7 @@ def detect_from_filename(filename: str) -> Optional[Language]:
     return FILENAME_PATTERNS.get(basename) or FILENAME_PATTERNS.get(name_without_ext)
 
 
-def detect_project_language(directory: str = ".") -> Optional[Language]:
+def detect_project_language(directory: str = ".") -> Language | None:
     """
     Detect primary language from project structure.
 
@@ -109,7 +109,7 @@ def detect_project_language(directory: str = ".") -> Optional[Language]:
     return None
 
 
-def get_language_info(language: Language) -> dict:
+def get_language_info(language: Language) -> dict[str, Any]:
     """
     Get information about a language.
 
@@ -120,7 +120,7 @@ def get_language_info(language: Language) -> dict:
     - lint_command: Default lint command
     - typecheck_command: Default type check command
     """
-    info: dict[Language, dict] = {
+    info: dict[Language, dict[str, Any]] = {
         Language.PYTHON: {
             "name": "Python",
             "extensions": [".py", ".pyi"],

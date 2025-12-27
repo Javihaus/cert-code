@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any
 
 import click
 from rich.console import Console
@@ -28,7 +28,7 @@ console = Console()
 
 @click.group()
 @click.version_option(version="0.1.0", prog_name="cert-code")
-def main():
+def main() -> None:
     """CERT Code - Evaluate AI-generated code artifacts."""
     pass
 
@@ -103,19 +103,19 @@ def main():
 )
 def submit(
     task: str,
-    diff: Optional[str],
+    diff: str | None,
     ref: str,
-    base_ref: Optional[str],
-    run_tests: Optional[bool],
-    run_lint: Optional[bool],
-    run_typecheck: Optional[bool],
+    base_ref: str | None,
+    run_tests: bool | None,
+    run_lint: bool | None,
+    run_typecheck: bool | None,
     context: tuple[str, ...],
-    language: Optional[str],
-    tool: Optional[str],
-    project: Optional[str],
-    config: Optional[str],
+    language: str | None,
+    tool: str | None,
+    project: str | None,
+    config: str | None,
     dry_run: bool,
-):
+) -> None:
     """Submit a code trace to CERT."""
     # Load config
     config_path = Path(config) if config else None
@@ -210,7 +210,7 @@ def submit(
     is_flag=True,
     help="Overwrite existing configuration",
 )
-def init(force: bool):
+def init(force: bool) -> None:
     """Initialize cert-code configuration."""
     config_path = Path(".cert-code.toml")
 
@@ -254,7 +254,7 @@ def init(force: bool):
     is_flag=True,
     help="Remove the git hook",
 )
-def hook(hook_type: str, uninstall: bool):
+def hook(hook_type: str, uninstall: bool) -> None:
     """Install or remove git hooks for automatic submission."""
     from cert_code.hooks.install import install_hook, uninstall_hook
 
@@ -267,7 +267,8 @@ def hook(hook_type: str, uninstall: bool):
         if install_hook(hook_type):
             console.print(f"[green]✓[/green] Installed {hook_type} hook")
             console.print(
-                f"\nThe hook will run [bold]cert-code submit[/bold] after each {hook_type.replace('-', ' ')}.\n"
+                f"\nThe hook will run [bold]cert-code submit[/bold] after each "
+                f"{hook_type.replace('-', ' ')}.\n"
                 "Set [dim]CERT_CODE_TASK[/dim] environment variable to provide task description,\n"
                 "or the hook will use the commit message."
             )
@@ -277,7 +278,7 @@ def hook(hook_type: str, uninstall: bool):
 
 
 @main.command()
-def status():
+def status() -> None:
     """Check configuration and connectivity."""
     config = CertCodeConfig.load()
 
@@ -336,7 +337,7 @@ def status():
             console.print(f"[red]✗[/red] Cannot reach API: {e}")
 
 
-def _show_dry_run(task: str, diff: str, options: CollectorOptions, tool: Optional[str]):
+def _show_dry_run(task: str, diff: str, options: CollectorOptions, tool: str | None) -> None:
     """Display what would be submitted in dry-run mode."""
     from cert_code.analyzers.diff import parse_diff
 
@@ -368,7 +369,7 @@ def _show_dry_run(task: str, diff: str, options: CollectorOptions, tool: Optiona
             console.print(f"  ... and {len(artifact.files_changed) - 10} more")
 
 
-def _show_evaluation(evaluation: dict):
+def _show_evaluation(evaluation: dict[str, Any]) -> None:
     """Display evaluation results."""
     table = Table(title="Evaluation Results")
     table.add_column("Metric", style="cyan")
