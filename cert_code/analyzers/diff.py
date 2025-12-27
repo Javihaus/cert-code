@@ -8,12 +8,13 @@ Extracts structured information from git diffs:
 - Content extraction
 """
 
+from __future__ import annotations
+
 import re
 from dataclasses import dataclass
 from typing import Optional
 
 from cert_code.models import CodeArtifact, DiffStats, Language
-
 
 # File extension to language mapping
 EXTENSION_LANGUAGE_MAP: dict[str, Language] = {
@@ -63,6 +64,7 @@ DELETION_PATTERN = re.compile(r"^-(?!--)", re.MULTILINE)
 @dataclass
 class DiffFile:
     """A single file within a diff."""
+
     path: str
     old_path: Optional[str]
     additions: int
@@ -95,8 +97,20 @@ def detect_primary_language(files: list[str]) -> Language:
 
     # Priority weights - code files matter more than configs
     priority_extensions = {
-        ".py", ".js", ".ts", ".go", ".rs", ".java", ".c", ".cpp",
-        ".cs", ".rb", ".php", ".swift", ".kt", ".scala"
+        ".py",
+        ".js",
+        ".ts",
+        ".go",
+        ".rs",
+        ".java",
+        ".c",
+        ".cpp",
+        ".cs",
+        ".rb",
+        ".php",
+        ".swift",
+        ".kt",
+        ".scala",
     }
 
     for file_path in files:

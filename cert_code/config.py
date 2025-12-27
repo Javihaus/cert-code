@@ -7,11 +7,13 @@ Supports:
 - CLI arguments (highest priority)
 """
 
+from __future__ import annotations
+
 import os
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any, Optional
-import sys
 
 if sys.version_info >= (3, 11):
     import tomllib
@@ -60,7 +62,7 @@ class CertCodeConfig:
     git_hook_type: str = "post-commit"  # post-commit, pre-push
 
     @classmethod
-    def load(cls, config_path: Optional[Path] = None) -> "CertCodeConfig":
+    def load(cls, config_path: Optional[Path] = None) -> CertCodeConfig:
         """
         Load configuration from multiple sources.
 
@@ -161,7 +163,10 @@ class CertCodeConfig:
             "TYPECHECK_COMMAND": "typecheck_command",
             "AUTO_RUN_TESTS": ("auto_run_tests", lambda x: x.lower() in ("1", "true", "yes")),
             "AUTO_RUN_LINT": ("auto_run_lint", lambda x: x.lower() in ("1", "true", "yes")),
-            "AUTO_RUN_TYPECHECK": ("auto_run_typecheck", lambda x: x.lower() in ("1", "true", "yes")),
+            "AUTO_RUN_TYPECHECK": (
+                "auto_run_typecheck",
+                lambda x: x.lower() in ("1", "true", "yes"),
+            ),
         }
 
         for env_suffix, mapping in mappings.items():
@@ -185,7 +190,7 @@ class CertCodeConfig:
             "",
             "[api]",
             f'url = "{self.api_url}"',
-            f'# key = "your-api-key"  # Or set CERT_CODE_API_KEY env var',
+            '# key = "your-api-key"  # Or set CERT_CODE_API_KEY env var',
             "",
             "[project]",
             f'# id = "{self.project_id or "your-project-id"}"',
@@ -208,7 +213,7 @@ class CertCodeConfig:
             '# command = "mypy ."  # or "tsc --noEmit", etc.',
             "",
             "[context]",
-            "# files = [\"README.md\", \"docs/api.md\"]  # Files to include as context for SGI",
+            '# files = ["README.md", "docs/api.md"]  # Files to include as context for SGI',
             f"max_size = {self.context_max_size}",
             "",
             "[git]",

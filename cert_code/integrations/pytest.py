@@ -9,8 +9,7 @@ import json
 import re
 import subprocess
 from dataclasses import dataclass, field
-from pathlib import Path
-from typing import Any, Optional
+from typing import Optional
 
 from cert_code.models import TestResults
 
@@ -18,6 +17,7 @@ from cert_code.models import TestResults
 @dataclass
 class PytestTestCase:
     """A single pytest test case."""
+
     nodeid: str
     outcome: str  # passed, failed, skipped, error
     duration: float = 0.0
@@ -28,6 +28,7 @@ class PytestTestCase:
 @dataclass
 class PytestReport:
     """Detailed pytest report."""
+
     tests: list[PytestTestCase]
     passed: int = 0
     failed: int = 0
@@ -131,12 +132,14 @@ class PytestIntegration:
 
             tests = []
             for test in data.get("tests", []):
-                tests.append(PytestTestCase(
-                    nodeid=test.get("nodeid", ""),
-                    outcome=test.get("outcome", ""),
-                    duration=test.get("duration", 0.0),
-                    longrepr=test.get("longrepr"),
-                ))
+                tests.append(
+                    PytestTestCase(
+                        nodeid=test.get("nodeid", ""),
+                        outcome=test.get("outcome", ""),
+                        duration=test.get("duration", 0.0),
+                        longrepr=test.get("longrepr"),
+                    )
+                )
 
             summary = data.get("summary", {})
 

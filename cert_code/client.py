@@ -8,6 +8,8 @@ Handles:
 - Retry logic
 """
 
+from __future__ import annotations
+
 import asyncio
 import logging
 from dataclasses import dataclass
@@ -18,12 +20,12 @@ import httpx
 from cert_code.config import CertCodeConfig
 from cert_code.models import CodeTrace
 
-
 logger = logging.getLogger(__name__)
 
 
 class CertAPIError(Exception):
     """Error from CERT API."""
+
     def __init__(self, status_code: int, message: str, details: Optional[dict] = None):
         self.status_code = status_code
         self.message = message
@@ -34,6 +36,7 @@ class CertAPIError(Exception):
 @dataclass
 class SubmitResult:
     """Result of trace submission."""
+
     success: bool
     trace_id: Optional[str] = None
     error: Optional[str] = None
@@ -137,7 +140,7 @@ class CertClient:
         """Close the HTTP client."""
         self._client.close()
 
-    def __enter__(self) -> "CertClient":
+    def __enter__(self) -> CertClient:
         return self
 
     def __exit__(self, *args) -> None:
@@ -216,14 +219,12 @@ class CertAsyncClient:
             async with semaphore:
                 return await self.submit(trace)
 
-        return await asyncio.gather(
-            *[submit_with_semaphore(t) for t in traces]
-        )
+        return await asyncio.gather(*[submit_with_semaphore(t) for t in traces])
 
     async def close(self) -> None:
         await self._client.aclose()
 
-    async def __aenter__(self) -> "CertAsyncClient":
+    async def __aenter__(self) -> CertAsyncClient:
         return self
 
     async def __aexit__(self, *args) -> None:

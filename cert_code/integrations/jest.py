@@ -7,7 +7,7 @@ Provides detailed parsing of Jest output.
 import json
 import subprocess
 from dataclasses import dataclass, field
-from typing import Any, Optional
+from typing import Optional
 
 from cert_code.models import TestResults
 
@@ -15,6 +15,7 @@ from cert_code.models import TestResults
 @dataclass
 class JestTestCase:
     """A single Jest test case."""
+
     title: str
     fullName: str
     status: str  # passed, failed, pending
@@ -25,6 +26,7 @@ class JestTestCase:
 @dataclass
 class JestTestSuite:
     """A Jest test suite (file)."""
+
     name: str
     tests: list[JestTestCase]
     startTime: int = 0
@@ -34,6 +36,7 @@ class JestTestSuite:
 @dataclass
 class JestReport:
     """Complete Jest test report."""
+
     testSuites: list[JestTestSuite]
     numPassedTests: int = 0
     numFailedTests: int = 0
@@ -115,20 +118,24 @@ class JestIntegration:
             for suite_data in data.get("testResults", []):
                 tests = []
                 for test in suite_data.get("assertionResults", []):
-                    tests.append(JestTestCase(
-                        title=test.get("title", ""),
-                        fullName=test.get("fullName", ""),
-                        status=test.get("status", ""),
-                        duration=test.get("duration", 0),
-                        failureMessages=test.get("failureMessages", []),
-                    ))
+                    tests.append(
+                        JestTestCase(
+                            title=test.get("title", ""),
+                            fullName=test.get("fullName", ""),
+                            status=test.get("status", ""),
+                            duration=test.get("duration", 0),
+                            failureMessages=test.get("failureMessages", []),
+                        )
+                    )
 
-                test_suites.append(JestTestSuite(
-                    name=suite_data.get("name", ""),
-                    tests=tests,
-                    startTime=suite_data.get("startTime", 0),
-                    endTime=suite_data.get("endTime", 0),
-                ))
+                test_suites.append(
+                    JestTestSuite(
+                        name=suite_data.get("name", ""),
+                        tests=tests,
+                        startTime=suite_data.get("startTime", 0),
+                        endTime=suite_data.get("endTime", 0),
+                    )
+                )
 
             return JestReport(
                 testSuites=test_suites,

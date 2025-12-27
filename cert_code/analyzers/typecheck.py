@@ -7,18 +7,20 @@ Supports:
 - go vet (Go)
 """
 
-import json
+from __future__ import annotations
+
 import re
 import subprocess
 from dataclasses import dataclass
 from typing import Optional
 
-from cert_code.models import TypeCheckResults, Language
+from cert_code.models import Language, TypeCheckResults
 
 
 @dataclass
 class TypeCheckerConfig:
     """Configuration for a type checker."""
+
     command: list[str]
     tool: str
     parser: str
@@ -116,11 +118,13 @@ def parse_mypy(output: str, returncode: int, tool: str) -> TypeCheckResults:
 
     errors = []
     for match in error_pattern.finditer(output):
-        errors.append({
-            "file": match.group(1),
-            "line": int(match.group(2)),
-            "message": match.group(3),
-        })
+        errors.append(
+            {
+                "file": match.group(1),
+                "line": int(match.group(2)),
+                "message": match.group(3),
+            }
+        )
 
     return TypeCheckResults(
         passed=len(errors) == 0 and returncode == 0,
@@ -137,13 +141,15 @@ def parse_tsc(output: str, returncode: int, tool: str) -> TypeCheckResults:
 
     errors = []
     for match in error_pattern.finditer(output):
-        errors.append({
-            "file": match.group(1),
-            "line": int(match.group(2)),
-            "column": int(match.group(3)),
-            "code": match.group(4),
-            "message": match.group(5),
-        })
+        errors.append(
+            {
+                "file": match.group(1),
+                "line": int(match.group(2)),
+                "column": int(match.group(3)),
+                "code": match.group(4),
+                "message": match.group(5),
+            }
+        )
 
     return TypeCheckResults(
         passed=len(errors) == 0 and returncode == 0,
@@ -160,12 +166,14 @@ def parse_go_vet(output: str, returncode: int, tool: str) -> TypeCheckResults:
 
     errors = []
     for match in error_pattern.finditer(output):
-        errors.append({
-            "file": match.group(1),
-            "line": int(match.group(2)),
-            "column": int(match.group(3)),
-            "message": match.group(4),
-        })
+        errors.append(
+            {
+                "file": match.group(1),
+                "line": int(match.group(2)),
+                "column": int(match.group(3)),
+                "message": match.group(4),
+            }
+        )
 
     return TypeCheckResults(
         passed=len(errors) == 0 and returncode == 0,
@@ -187,10 +195,7 @@ def _get_parser(tool: str):
 
 def _parse_generic_typecheck_output(output: str, returncode: int, tool: str) -> TypeCheckResults:
     """Generic fallback parser."""
-    error_count = sum(
-        1 for line in output.split("\n")
-        if "error" in line.lower()
-    )
+    error_count = sum(1 for line in output.split("\n") if "error" in line.lower())
 
     return TypeCheckResults(
         passed=returncode == 0,

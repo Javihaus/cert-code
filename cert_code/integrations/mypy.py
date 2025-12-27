@@ -7,7 +7,7 @@ Provides detailed parsing of mypy output.
 import json
 import re
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from cert_code.models import TypeCheckResults
@@ -16,6 +16,7 @@ from cert_code.models import TypeCheckResults
 @dataclass
 class MypyError:
     """A single mypy error."""
+
     file: str
     line: int
     column: int
@@ -27,6 +28,7 @@ class MypyError:
 @dataclass
 class MypyReport:
     """Complete mypy report."""
+
     errors: list[MypyError]
     error_count: int = 0
     warning_count: int = 0
@@ -144,11 +146,13 @@ class MypyIntegration:
             severity = match.group(3)
             if severity == "error":
                 error_count += 1
-                errors.append({
-                    "file": match.group(1),
-                    "line": int(match.group(2)),
-                    "message": match.group(4),
-                })
+                errors.append(
+                    {
+                        "file": match.group(1),
+                        "line": int(match.group(2)),
+                        "message": match.group(4),
+                    }
+                )
 
         return TypeCheckResults(
             passed=error_count == 0 and returncode == 0,

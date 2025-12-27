@@ -5,6 +5,8 @@ These models define the structure of code evaluation traces.
 Designed to be serializable to CERT API format.
 """
 
+from __future__ import annotations
+
 from dataclasses import dataclass, field
 from datetime import datetime
 from enum import Enum
@@ -13,6 +15,7 @@ from typing import Any, Optional
 
 class Language(str, Enum):
     """Supported programming languages."""
+
     PYTHON = "python"
     JAVASCRIPT = "javascript"
     TYPESCRIPT = "typescript"
@@ -37,6 +40,7 @@ class Language(str, Enum):
 @dataclass
 class DiffStats:
     """Git diff statistics."""
+
     additions: int = 0
     deletions: int = 0
     files_changed: int = 0
@@ -52,6 +56,7 @@ class DiffStats:
 @dataclass
 class TestResults:
     """Test execution results."""
+
     passed: bool
     total: int = 0
     failed: int = 0
@@ -70,6 +75,7 @@ class TestResults:
 @dataclass
 class LintResults:
     """Linting results."""
+
     passed: bool
     error_count: int = 0
     warning_count: int = 0
@@ -80,6 +86,7 @@ class LintResults:
 @dataclass
 class TypeCheckResults:
     """Type checking results."""
+
     passed: bool
     error_count: int = 0
     errors: list[dict[str, Any]] = field(default_factory=list)
@@ -89,6 +96,7 @@ class TypeCheckResults:
 @dataclass
 class CodeArtifact:
     """The generated code artifact."""
+
     diff: str
     files_changed: list[str]
     language: Language
@@ -96,15 +104,17 @@ class CodeArtifact:
     raw_content: Optional[str] = None  # Full file content if single file
 
     @classmethod
-    def from_git_diff(cls, diff: str, language: Optional[Language] = None) -> "CodeArtifact":
+    def from_git_diff(cls, diff: str, language: Optional[Language] = None) -> CodeArtifact:
         """Parse a git diff into a CodeArtifact."""
         from cert_code.analyzers.diff import parse_diff
+
         return parse_diff(diff, language)
 
 
 @dataclass
 class CodeTask:
     """The task/intent for code generation."""
+
     description: str
     conversation_id: Optional[str] = None
     tool: Optional[str] = None  # "claude-code", "cursor", "copilot", etc.
@@ -113,6 +123,7 @@ class CodeTask:
 @dataclass
 class CodeVerification:
     """Verification signals for generated code."""
+
     parseable: bool = True
     tests: Optional[TestResults] = None
     lint: Optional[LintResults] = None
@@ -139,6 +150,7 @@ class CodeTrace:
 
     This is the primary data structure that gets sent to CERT.
     """
+
     task: CodeTask
     artifact: CodeArtifact
     verification: CodeVerification
@@ -161,51 +173,38 @@ class CodeTrace:
             "kind": "code",
             "evaluation_mode": "code",
             "eval_mode": "code",
-
             # Map task to input
             "input_text": self.task.description,
-
             # Map artifact to output
             "output_text": self.artifact.diff,
-
             # Context for SGI calculation
             "context": self.context,
             "knowledge_base": self.context,
             "is_grounded": self.context is not None,
             "context_source": "user_provided" if self.context else None,
-
             # Code-specific fields
             "code_language": self.artifact.language.value,
             "code_files_changed": self.artifact.files_changed,
             "code_diff_stats": self.artifact.diff_stats.to_dict(),
             "code_parseable": self.verification.parseable,
-
             # Test results
             "code_tests_passed": (
-                self.verification.tests.passed
-                if self.verification.tests else None
+                self.verification.tests.passed if self.verification.tests else None
             ),
             "code_tests_total": (
-                self.verification.tests.total
-                if self.verification.tests else None
+                self.verification.tests.total if self.verification.tests else None
             ),
             "code_tests_failed": (
-                self.verification.tests.failed
-                if self.verification.tests else None
+                self.verification.tests.failed if self.verification.tests else None
             ),
-
             # Type check
             "code_type_check_passed": (
-                self.verification.typecheck.passed
-                if self.verification.typecheck else None
+                self.verification.typecheck.passed if self.verification.typecheck else None
             ),
-
             # Lint
             "code_lint_errors": (
-                self.verification.lint.error_count
-                if self.verification.lint else 0
+                self.verification.lint.error_count if self.verification.lint else 0
             ),
-
             # Metadata
             "metadata": {
                 **self.metadata,
@@ -213,31 +212,26 @@ class CodeTrace:
                 "tool": self.task.tool,
                 "conversation_id": self.task.conversation_id,
                 "test_framework": (
-                    self.verification.tests.framework
-                    if self.verification.tests else None
+                    self.verification.tests.framework if self.verification.tests else None
                 ),
                 "test_output": (
                     self.verification.tests.output[:10000]  # Truncate
-                    if self.verification.tests else None
+                    if self.verification.tests
+                    else None
                 ),
-                "lint_tool": (
-                    self.verification.lint.tool
-                    if self.verification.lint else None
-                ),
+                "lint_tool": (self.verification.lint.tool if self.verification.lint else None),
                 "lint_errors_detail": (
                     self.verification.lint.errors[:50]  # First 50 errors
-                    if self.verification.lint else None
+                    if self.verification.lint
+                    else None
                 ),
                 "typecheck_tool": (
-                    self.verification.typecheck.tool
-                    if self.verification.typecheck else None
+                    self.verification.typecheck.tool if self.verification.typecheck else None
                 ),
                 "typecheck_errors_detail": (
-                    self.verification.typecheck.errors[:50]
-                    if self.verification.typecheck else None
+                    self.verification.typecheck.errors[:50] if self.verification.typecheck else None
                 ),
             },
-
             # Timestamps
             "start_time": self.created_at.isoformat(),
             "source": "cert-code",

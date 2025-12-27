@@ -2,8 +2,9 @@
 Tests for the CodeCollector.
 """
 
+from unittest.mock import Mock, patch
+
 import pytest
-from unittest.mock import Mock, patch, MagicMock
 
 from cert_code.collector import CodeCollector, CollectorOptions
 from cert_code.config import CertCodeConfig
@@ -44,7 +45,7 @@ class TestCodeCollector:
 
     def test_from_diff_parses_correctly(self, mock_config, sample_diff):
         """Test that from_diff correctly parses a diff."""
-        with patch.object(CodeCollector, '__init__', lambda x, y: None):
+        with patch.object(CodeCollector, "__init__", lambda x, y: None):
             collector = CodeCollector.__new__(CodeCollector)
             collector.config = mock_config
             collector.client = Mock()
@@ -85,12 +86,12 @@ class TestCodeCollector:
 
     def test_from_commit_no_changes(self, mock_config):
         """Test from_commit with no changes returns error."""
-        with patch.object(CodeCollector, '__init__', lambda x, y: None):
+        with patch.object(CodeCollector, "__init__", lambda x, y: None):
             collector = CodeCollector.__new__(CodeCollector)
             collector.config = mock_config
             collector.client = Mock()
 
-            with patch('cert_code.collector.get_diff_from_git', return_value=""):
+            with patch("cert_code.collector.get_diff_from_git", return_value=""):
                 result = collector.from_commit(task="Test task")
 
             assert not result.success
@@ -102,7 +103,7 @@ class TestCodeCollector:
         context_file = tmp_path / "context.md"
         context_file.write_text("# Test Context\n\nThis is test context.")
 
-        with patch.object(CodeCollector, '__init__', lambda x, y: None):
+        with patch.object(CodeCollector, "__init__", lambda x, y: None):
             collector = CodeCollector.__new__(CodeCollector)
             collector.config = mock_config
             collector.config.context_files = []
@@ -115,7 +116,7 @@ class TestCodeCollector:
 
     def test_context_file_not_found(self, mock_config):
         """Test context loading with missing file."""
-        with patch.object(CodeCollector, '__init__', lambda x, y: None):
+        with patch.object(CodeCollector, "__init__", lambda x, y: None):
             collector = CodeCollector.__new__(CodeCollector)
             collector.config = mock_config
             collector.config.context_files = []
@@ -131,7 +132,7 @@ class TestCodeCollector:
         context_file = tmp_path / "large_context.md"
         context_file.write_text("x" * 10000)
 
-        with patch.object(CodeCollector, '__init__', lambda x, y: None):
+        with patch.object(CodeCollector, "__init__", lambda x, y: None):
             collector = CodeCollector.__new__(CodeCollector)
             collector.config = mock_config
             collector.config.context_files = []
@@ -150,7 +151,7 @@ class TestVerificationBuilding:
         """Test that _check_parseable returns True for valid diff."""
         from cert_code.analyzers.diff import parse_diff
 
-        with patch.object(CodeCollector, '__init__', lambda x, y: None):
+        with patch.object(CodeCollector, "__init__", lambda x, y: None):
             collector = CodeCollector.__new__(CodeCollector)
             collector.config = mock_config
 
@@ -161,7 +162,7 @@ class TestVerificationBuilding:
         """Test verification building without running checks."""
         from cert_code.analyzers.diff import parse_diff
 
-        with patch.object(CodeCollector, '__init__', lambda x, y: None):
+        with patch.object(CodeCollector, "__init__", lambda x, y: None):
             collector = CodeCollector.__new__(CodeCollector)
             collector.config = mock_config
             collector.config.auto_run_tests = False

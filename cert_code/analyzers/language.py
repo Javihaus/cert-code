@@ -7,13 +7,14 @@ Provides comprehensive language detection from:
 - Project structure
 """
 
+from __future__ import annotations
+
 import os
 import re
 from pathlib import Path
 from typing import Optional
 
 from cert_code.models import Language
-
 
 # Shebang patterns for language detection
 SHEBANG_PATTERNS: dict[str, Language] = {
@@ -92,7 +93,7 @@ def detect_project_language(directory: str = ".") -> Optional[Language]:
             return language
 
     # Count files by extension
-    from cert_code.analyzers.diff import detect_language, EXTENSION_LANGUAGE_MAP
+    from cert_code.analyzers.diff import EXTENSION_LANGUAGE_MAP
 
     language_counts: dict[Language, int] = {}
 
@@ -178,10 +179,13 @@ def get_language_info(language: Language) -> dict:
         },
     }
 
-    return info.get(language, {
-        "name": language.value.title(),
-        "extensions": [],
-        "test_command": None,
-        "lint_command": None,
-        "typecheck_command": None,
-    })
+    return info.get(
+        language,
+        {
+            "name": language.value.title(),
+            "extensions": [],
+            "test_command": None,
+            "lint_command": None,
+            "typecheck_command": None,
+        },
+    )
