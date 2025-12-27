@@ -12,6 +12,7 @@ from typing import Optional
 @dataclass
 class CommitInfo:
     """Information about a git commit."""
+
     sha: str
     message: str
     author: str
@@ -32,11 +33,7 @@ def get_commit_info(ref: str = "HEAD") -> Optional[CommitInfo]:
     try:
         # Get commit info in a single call
         result = subprocess.run(
-            [
-                "git", "log", "-1",
-                "--format=%H%n%s%n%an%n%ae%n%aI",
-                ref
-            ],
+            ["git", "log", "-1", "--format=%H%n%s%n%an%n%ae%n%aI", ref],
             capture_output=True,
             text=True,
             check=True,

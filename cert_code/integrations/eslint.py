@@ -6,7 +6,7 @@ Provides detailed parsing of ESLint output.
 
 import json
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from cert_code.models import LintResults
@@ -15,6 +15,7 @@ from cert_code.models import LintResults
 @dataclass
 class EslintMessage:
     """A single ESLint message."""
+
     ruleId: Optional[str]
     severity: int  # 1 = warning, 2 = error
     message: str
@@ -28,6 +29,7 @@ class EslintMessage:
 @dataclass
 class EslintFileResult:
     """ESLint results for a single file."""
+
     filePath: str
     messages: list[EslintMessage]
     errorCount: int = 0
@@ -39,6 +41,7 @@ class EslintFileResult:
 @dataclass
 class EslintReport:
     """Complete ESLint report."""
+
     results: list[EslintFileResult]
     errorCount: int = 0
     warningCount: int = 0
@@ -113,28 +116,32 @@ class EslintIntegration:
             for file_result in data:
                 messages = []
                 for msg in file_result.get("messages", []):
-                    messages.append(EslintMessage(
-                        ruleId=msg.get("ruleId"),
-                        severity=msg.get("severity", 1),
-                        message=msg.get("message", ""),
-                        line=msg.get("line", 0),
-                        column=msg.get("column", 0),
-                        endLine=msg.get("endLine"),
-                        endColumn=msg.get("endColumn"),
-                        fix=msg.get("fix"),
-                    ))
+                    messages.append(
+                        EslintMessage(
+                            ruleId=msg.get("ruleId"),
+                            severity=msg.get("severity", 1),
+                            message=msg.get("message", ""),
+                            line=msg.get("line", 0),
+                            column=msg.get("column", 0),
+                            endLine=msg.get("endLine"),
+                            endColumn=msg.get("endColumn"),
+                            fix=msg.get("fix"),
+                        )
+                    )
 
                 file_errors = file_result.get("errorCount", 0)
                 file_warnings = file_result.get("warningCount", 0)
 
-                results.append(EslintFileResult(
-                    filePath=file_result.get("filePath", ""),
-                    messages=messages,
-                    errorCount=file_errors,
-                    warningCount=file_warnings,
-                    fixableErrorCount=file_result.get("fixableErrorCount", 0),
-                    fixableWarningCount=file_result.get("fixableWarningCount", 0),
-                ))
+                results.append(
+                    EslintFileResult(
+                        filePath=file_result.get("filePath", ""),
+                        messages=messages,
+                        errorCount=file_errors,
+                        warningCount=file_warnings,
+                        fixableErrorCount=file_result.get("fixableErrorCount", 0),
+                        fixableWarningCount=file_result.get("fixableWarningCount", 0),
+                    )
+                )
 
                 total_errors += file_errors
                 total_warnings += file_warnings
@@ -171,13 +178,15 @@ class EslintIntegration:
         for file_result in report.results:
             for msg in file_result.messages:
                 if msg.severity == 2:  # Error
-                    errors.append({
-                        "file": file_result.filePath,
-                        "line": msg.line,
-                        "column": msg.column,
-                        "code": msg.ruleId,
-                        "message": msg.message,
-                    })
+                    errors.append(
+                        {
+                            "file": file_result.filePath,
+                            "line": msg.line,
+                            "column": msg.column,
+                            "code": msg.ruleId,
+                            "message": msg.message,
+                        }
+                    )
 
         return LintResults(
             passed=report.errorCount == 0,

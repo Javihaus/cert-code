@@ -2,13 +2,11 @@
 Git hook installation utilities.
 """
 
-import os
 import stat
 from pathlib import Path
 from typing import Optional
 
-
-HOOK_TEMPLATE = '''#!/bin/bash
+HOOK_TEMPLATE = """#!/bin/bash
 # CERT Code - Automatic code evaluation hook
 # Installed by: cert-code hook install
 
@@ -30,7 +28,7 @@ cert-code submit \\
 
 # Don't fail the commit/push if submission fails
 exit 0
-'''
+"""
 
 
 def get_git_hooks_dir() -> Optional[Path]:

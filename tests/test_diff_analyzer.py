@@ -2,13 +2,11 @@
 Tests for the diff analyzer.
 """
 
-import pytest
-
 from cert_code.analyzers.diff import (
     detect_language,
     detect_primary_language,
-    parse_diff,
     extract_added_content,
+    parse_diff,
 )
 from cert_code.models import Language
 

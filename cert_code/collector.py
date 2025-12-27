@@ -5,6 +5,8 @@ High-level interface for collecting and submitting code traces.
 Orchestrates diff analysis, test running, and API submission.
 """
 
+from __future__ import annotations
+
 import logging
 import subprocess
 from dataclasses import dataclass
@@ -22,10 +24,8 @@ from cert_code.models import (
     CodeVerification,
     Language,
     LintResults,
-    TestResults,
     TypeCheckResults,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +33,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CollectorOptions:
     """Options for the collector."""
+
     run_tests: bool = False
     run_lint: bool = False
     run_typecheck: bool = False
@@ -224,13 +225,9 @@ class CodeCollector:
             )
 
             # Count errors (simple heuristic - count lines with "error")
-            error_count = sum(
-                1 for line in result.stdout.split("\n")
-                if "error" in line.lower()
-            )
+            error_count = sum(1 for line in result.stdout.split("\n") if "error" in line.lower())
             warning_count = sum(
-                1 for line in result.stdout.split("\n")
-                if "warning" in line.lower()
+                1 for line in result.stdout.split("\n") if "warning" in line.lower()
             )
 
             return LintResults(
@@ -266,10 +263,7 @@ class CodeCollector:
             )
 
             # Count errors
-            error_count = sum(
-                1 for line in result.stdout.split("\n")
-                if "error" in line.lower()
-            )
+            error_count = sum(1 for line in result.stdout.split("\n") if "error" in line.lower())
 
             return TypeCheckResults(
                 passed=result.returncode == 0,
@@ -321,7 +315,7 @@ class CodeCollector:
         """Close the client."""
         self.client.close()
 
-    def __enter__(self) -> "CodeCollector":
+    def __enter__(self) -> CodeCollector:
         return self
 
     def __exit__(self, *args) -> None:

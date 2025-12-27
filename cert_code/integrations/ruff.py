@@ -6,7 +6,7 @@ Provides detailed parsing of Ruff output.
 
 import json
 import subprocess
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from cert_code.models import LintResults
@@ -15,6 +15,7 @@ from cert_code.models import LintResults
 @dataclass
 class RuffDiagnostic:
     """A single Ruff diagnostic."""
+
     code: str
     message: str
     filename: str
@@ -27,6 +28,7 @@ class RuffDiagnostic:
 @dataclass
 class RuffReport:
     """Complete Ruff report."""
+
     diagnostics: list[RuffDiagnostic]
     error_count: int = 0
     warning_count: int = 0
@@ -99,15 +101,17 @@ class RuffIntegration:
             for diag in data:
                 code = diag.get("code", "")
 
-                diagnostics.append(RuffDiagnostic(
-                    code=code,
-                    message=diag.get("message", ""),
-                    filename=diag.get("filename", ""),
-                    location=diag.get("location", {}),
-                    end_location=diag.get("end_location"),
-                    fix=diag.get("fix"),
-                    noqa_row=diag.get("noqa_row"),
-                ))
+                diagnostics.append(
+                    RuffDiagnostic(
+                        code=code,
+                        message=diag.get("message", ""),
+                        filename=diag.get("filename", ""),
+                        location=diag.get("location", {}),
+                        end_location=diag.get("end_location"),
+                        fix=diag.get("fix"),
+                        noqa_row=diag.get("noqa_row"),
+                    )
+                )
 
                 # Categorize by severity
                 # E/F codes are errors, others are warnings
@@ -147,13 +151,15 @@ class RuffIntegration:
 
         for diag in report.diagnostics:
             if diag.code.startswith("E") or diag.code.startswith("F"):
-                errors.append({
-                    "file": diag.filename,
-                    "line": diag.location.get("row", 0),
-                    "column": diag.location.get("column", 0),
-                    "code": diag.code,
-                    "message": diag.message,
-                })
+                errors.append(
+                    {
+                        "file": diag.filename,
+                        "line": diag.location.get("row", 0),
+                        "column": diag.location.get("column", 0),
+                        "code": diag.code,
+                        "message": diag.message,
+                    }
+                )
 
         return LintResults(
             passed=report.error_count == 0,

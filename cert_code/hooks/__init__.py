@@ -6,8 +6,8 @@ Provides utilities for:
 - Running cert-code on commits
 """
 
-from cert_code.hooks.install import install_hook, uninstall_hook, get_git_hooks_dir
-from cert_code.hooks.git import get_commit_info, get_staged_diff, get_commit_diff
+from cert_code.hooks.git import get_commit_diff, get_commit_info, get_staged_diff
+from cert_code.hooks.install import get_git_hooks_dir, install_hook, uninstall_hook
 
 __all__ = [
     "install_hook",

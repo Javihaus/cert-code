@@ -7,6 +7,9 @@ using the CERT (Comprehensive Evaluation and Reasoning Traces) framework.
 
 __version__ = "0.1.0"
 
+from cert_code.client import CertAsyncClient, CertClient, SubmitResult
+from cert_code.collector import CodeCollector, CollectorOptions
+from cert_code.config import CertCodeConfig
 from cert_code.models import (
     CodeArtifact,
     CodeTask,
@@ -18,9 +21,6 @@ from cert_code.models import (
     TestResults,
     TypeCheckResults,
 )
-from cert_code.collector import CodeCollector, CollectorOptions
-from cert_code.client import CertClient, CertAsyncClient, SubmitResult
-from cert_code.config import CertCodeConfig
 
 __all__ = [
     # Version

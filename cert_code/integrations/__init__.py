@@ -9,10 +9,10 @@ Provides specialized parsers for:
 - ruff (Python linting)
 """
 
-from cert_code.integrations.pytest import PytestIntegration
+from cert_code.integrations.eslint import EslintIntegration
 from cert_code.integrations.jest import JestIntegration
 from cert_code.integrations.mypy import MypyIntegration
-from cert_code.integrations.eslint import EslintIntegration
+from cert_code.integrations.pytest import PytestIntegration
 from cert_code.integrations.ruff import RuffIntegration
 
 __all__ = [

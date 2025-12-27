@@ -8,6 +8,8 @@ Supports:
 - cargo test (Rust)
 """
 
+from __future__ import annotations
+
 import json
 import re
 import subprocess
@@ -20,6 +22,7 @@ from cert_code.models import TestResults
 @dataclass
 class TestRunnerConfig:
     """Configuration for a test runner."""
+
     command: list[str]
     framework: str
     parser: str  # Parser function name
@@ -170,8 +173,10 @@ def parse_jest(output: str, returncode: int, framework: str) -> TestResults:
                 total=data.get("numTotalTests", 0),
                 failed=data.get("numFailedTests", 0),
                 skipped=data.get("numPendingTests", 0),
-                duration_ms=int(data.get("testResults", [{}])[0].get("endTime", 0) -
-                               data.get("testResults", [{}])[0].get("startTime", 0)),
+                duration_ms=int(
+                    data.get("testResults", [{}])[0].get("endTime", 0)
+                    - data.get("testResults", [{}])[0].get("startTime", 0)
+                ),
                 output=output,
                 framework=framework,
             )

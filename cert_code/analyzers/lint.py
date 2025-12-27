@@ -8,18 +8,20 @@ Supports:
 - clippy (Rust)
 """
 
+from __future__ import annotations
+
 import json
-import re
 import subprocess
 from dataclasses import dataclass
 from typing import Optional
 
-from cert_code.models import LintResults, Language
+from cert_code.models import Language, LintResults
 
 
 @dataclass
 class LinterConfig:
     """Configuration for a linter."""
+
     command: list[str]
     tool: str
     parser: str
@@ -207,13 +209,15 @@ def parse_golangci(output: str, returncode: int, tool: str) -> LintResults:
     try:
         data = json.loads(output)
         for issue in data.get("Issues", []):
-            errors.append({
-                "file": issue.get("Pos", {}).get("Filename", ""),
-                "line": issue.get("Pos", {}).get("Line", 0),
-                "column": issue.get("Pos", {}).get("Column", 0),
-                "code": issue.get("FromLinter", ""),
-                "message": issue.get("Text", ""),
-            })
+            errors.append(
+                {
+                    "file": issue.get("Pos", {}).get("Filename", ""),
+                    "line": issue.get("Pos", {}).get("Line", 0),
+                    "column": issue.get("Pos", {}).get("Column", 0),
+                    "code": issue.get("FromLinter", ""),
+                    "message": issue.get("Text", ""),
+                }
+            )
     except json.JSONDecodeError:
         error_count = len([l for l in output.split("\n") if l.strip()])
         return LintResults(
@@ -244,8 +248,12 @@ def parse_clippy(output: str, returncode: int, tool: str) -> LintResults:
                 message = data.get("message", {})
                 level = message.get("level", "")
                 entry = {
-                    "file": message.get("spans", [{}])[0].get("file_name", "") if message.get("spans") else "",
-                    "line": message.get("spans", [{}])[0].get("line_start", 0) if message.get("spans") else 0,
+                    "file": message.get("spans", [{}])[0].get("file_name", "")
+                    if message.get("spans")
+                    else "",
+                    "line": message.get("spans", [{}])[0].get("line_start", 0)
+                    if message.get("spans")
+                    else 0,
                     "code": message.get("code", {}).get("code", "") if message.get("code") else "",
                     "message": message.get("message", ""),
                 }
@@ -278,14 +286,8 @@ def _get_parser(tool: str):
 
 def _parse_generic_lint_output(output: str, returncode: int, tool: str) -> LintResults:
     """Generic fallback parser."""
-    error_count = sum(
-        1 for line in output.split("\n")
-        if "error" in line.lower()
-    )
-    warning_count = sum(
-        1 for line in output.split("\n")
-        if "warning" in line.lower()
-    )
+    error_count = sum(1 for line in output.split("\n") if "error" in line.lower())
+    warning_count = sum(1 for line in output.split("\n") if "warning" in line.lower())
 
     return LintResults(
         passed=returncode == 0,

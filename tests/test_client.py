@@ -2,13 +2,12 @@
 Tests for the CERT API client.
 """
 
-import pytest
-from unittest.mock import Mock, patch, MagicMock
-from datetime import datetime
+from unittest.mock import Mock, patch
 
 import httpx
+import pytest
 
-from cert_code.client import CertClient, CertAsyncClient, CertAPIError, SubmitResult
+from cert_code.client import CertAPIError, CertClient, SubmitResult
 from cert_code.config import CertCodeConfig
 from cert_code.models import (
     CodeArtifact,
@@ -62,13 +61,13 @@ class TestCertClient:
 
     def test_init_with_valid_config(self, mock_config):
         """Test client initialization with valid config."""
-        with patch('httpx.Client'):
+        with patch("httpx.Client"):
             client = CertClient(mock_config)
             assert client.config == mock_config
 
     def test_build_headers(self, mock_config):
         """Test header building."""
-        with patch('httpx.Client'):
+        with patch("httpx.Client"):
             client = CertClient(mock_config)
             headers = client._build_headers()
 
@@ -86,7 +85,7 @@ class TestCertClient:
             "evaluation": {"score": 0.95},
         }
 
-        with patch('httpx.Client') as mock_client_class:
+        with patch("httpx.Client") as mock_client_class:
             mock_client = Mock()
             mock_client.post.return_value = mock_response
             mock_client_class.return_value = mock_client
@@ -105,7 +104,7 @@ class TestCertClient:
         mock_response.content = b'{"error": "Invalid API key"}'
         mock_response.json.return_value = {"error": "Invalid API key"}
 
-        with patch('httpx.Client') as mock_client_class:
+        with patch("httpx.Client") as mock_client_class:
             mock_client = Mock()
             mock_client.post.return_value = mock_response
             mock_client_class.return_value = mock_client
@@ -118,7 +117,7 @@ class TestCertClient:
 
     def test_submit_network_error(self, mock_config, sample_trace):
         """Test submission with network error."""
-        with patch('httpx.Client') as mock_client_class:
+        with patch("httpx.Client") as mock_client_class:
             mock_client = Mock()
             mock_client.post.side_effect = httpx.RequestError("Connection failed")
             mock_client_class.return_value = mock_client
@@ -131,7 +130,7 @@ class TestCertClient:
 
     def test_context_manager(self, mock_config):
         """Test client as context manager."""
-        with patch('httpx.Client') as mock_client_class:
+        with patch("httpx.Client") as mock_client_class:
             mock_client = Mock()
             mock_client_class.return_value = mock_client
 

@@ -8,6 +8,8 @@ Commands:
     cert-code status     Check configuration and connectivity
 """
 
+from __future__ import annotations
+
 import sys
 from pathlib import Path
 from typing import Optional
@@ -17,11 +19,9 @@ from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
 
-from cert_code.client import CertClient
 from cert_code.collector import CodeCollector, CollectorOptions
 from cert_code.config import CertCodeConfig
 from cert_code.models import Language
-
 
 console = Console()
 
@@ -35,12 +35,14 @@ def main():
 
 @main.command()
 @click.option(
-    "--task", "-t",
+    "--task",
+    "-t",
     required=True,
     help="Task description (what was the AI asked to do)",
 )
 @click.option(
-    "--diff", "-d",
+    "--diff",
+    "-d",
     type=str,
     help="Diff string (if not using git)",
 )
@@ -69,12 +71,14 @@ def main():
     help="Run type checker",
 )
 @click.option(
-    "--context", "-c",
+    "--context",
+    "-c",
     multiple=True,
     help="Context files to include (can be specified multiple times)",
 )
 @click.option(
-    "--language", "-l",
+    "--language",
+    "-l",
     type=click.Choice([lang.value for lang in Language]),
     help="Override language detection",
 )
@@ -83,7 +87,8 @@ def main():
     help="Code generation tool name (e.g., claude-code, cursor)",
 )
 @click.option(
-    "--project", "-p",
+    "--project",
+    "-p",
     help="CERT project ID",
 )
 @click.option(
@@ -167,22 +172,26 @@ def submit(
 
         # Display result
         if result.success:
-            console.print(Panel(
-                f"[green]✓[/green] Trace submitted successfully\n\n"
-                f"Trace ID: [bold]{result.trace_id}[/bold]",
-                title="CERT Code",
-                border_style="green",
-            ))
+            console.print(
+                Panel(
+                    f"[green]✓[/green] Trace submitted successfully\n\n"
+                    f"Trace ID: [bold]{result.trace_id}[/bold]",
+                    title="CERT Code",
+                    border_style="green",
+                )
+            )
 
             # Show evaluation if available
             if result.evaluation:
                 _show_evaluation(result.evaluation)
         else:
-            console.print(Panel(
-                f"[red]✗[/red] Submission failed\n\n{result.error}",
-                title="CERT Code",
-                border_style="red",
-            ))
+            console.print(
+                Panel(
+                    f"[red]✗[/red] Submission failed\n\n{result.error}",
+                    title="CERT Code",
+                    border_style="red",
+                )
+            )
             sys.exit(1)
 
     except ValueError as e:
@@ -196,7 +205,8 @@ def submit(
 
 @main.command()
 @click.option(
-    "--force", "-f",
+    "--force",
+    "-f",
     is_flag=True,
     help="Overwrite existing configuration",
 )
@@ -217,20 +227,23 @@ def init(force: bool):
 
     config_path.write_text(config_content)
 
-    console.print(Panel(
-        f"[green]✓[/green] Created configuration file: [bold]{config_path}[/bold]\n\n"
-        "Next steps:\n"
-        "1. Set your API key: [dim]export CERT_CODE_API_KEY=your-key[/dim]\n"
-        "2. Set your project ID in the config file\n"
-        "3. Run [bold]cert-code submit[/bold] to evaluate code",
-        title="CERT Code Initialized",
-        border_style="green",
-    ))
+    console.print(
+        Panel(
+            f"[green]✓[/green] Created configuration file: [bold]{config_path}[/bold]\n\n"
+            "Next steps:\n"
+            "1. Set your API key: [dim]export CERT_CODE_API_KEY=your-key[/dim]\n"
+            "2. Set your project ID in the config file\n"
+            "3. Run [bold]cert-code submit[/bold] to evaluate code",
+            title="CERT Code Initialized",
+            border_style="green",
+        )
+    )
 
 
 @main.command()
 @click.option(
-    "--type", "-t",
+    "--type",
+    "-t",
     "hook_type",
     type=click.Choice(["post-commit", "pre-push"]),
     default="post-commit",
@@ -310,6 +323,7 @@ def status():
         console.print("\nTesting connectivity...")
         try:
             import httpx
+
             response = httpx.get(
                 f"{config.api_url.rstrip('/').replace('/v1', '')}/health",
                 timeout=5.0,
@@ -328,20 +342,22 @@ def _show_dry_run(task: str, diff: str, options: CollectorOptions, tool: Optiona
 
     artifact = parse_diff(diff, options.language)
 
-    console.print(Panel(
-        "[yellow]DRY RUN[/yellow] - Nothing will be submitted\n\n"
-        f"[bold]Task:[/bold] {task}\n"
-        f"[bold]Tool:[/bold] {tool or 'Not specified'}\n"
-        f"[bold]Language:[/bold] {artifact.language.value}\n"
-        f"[bold]Files changed:[/bold] {len(artifact.files_changed)}\n"
-        f"[bold]Additions:[/bold] {artifact.diff_stats.additions}\n"
-        f"[bold]Deletions:[/bold] {artifact.diff_stats.deletions}\n"
-        f"[bold]Run tests:[/bold] {options.run_tests}\n"
-        f"[bold]Run lint:[/bold] {options.run_lint}\n"
-        f"[bold]Run typecheck:[/bold] {options.run_typecheck}",
-        title="CERT Code - Dry Run",
-        border_style="yellow",
-    ))
+    console.print(
+        Panel(
+            "[yellow]DRY RUN[/yellow] - Nothing will be submitted\n\n"
+            f"[bold]Task:[/bold] {task}\n"
+            f"[bold]Tool:[/bold] {tool or 'Not specified'}\n"
+            f"[bold]Language:[/bold] {artifact.language.value}\n"
+            f"[bold]Files changed:[/bold] {len(artifact.files_changed)}\n"
+            f"[bold]Additions:[/bold] {artifact.diff_stats.additions}\n"
+            f"[bold]Deletions:[/bold] {artifact.diff_stats.deletions}\n"
+            f"[bold]Run tests:[/bold] {options.run_tests}\n"
+            f"[bold]Run lint:[/bold] {options.run_lint}\n"
+            f"[bold]Run typecheck:[/bold] {options.run_typecheck}",
+            title="CERT Code - Dry Run",
+            border_style="yellow",
+        )
+    )
 
     # Show files
     if artifact.files_changed:
