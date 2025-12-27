@@ -4,10 +4,12 @@ Ruff integration for cert-code.
 Provides detailed parsing of Ruff output.
 """
 
+from __future__ import annotations
+
 import json
 import subprocess
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any
 
 from cert_code.models import LintResults
 
@@ -19,10 +21,10 @@ class RuffDiagnostic:
     code: str
     message: str
     filename: str
-    location: dict  # row, column
-    end_location: Optional[dict] = None
-    fix: Optional[dict] = None
-    noqa_row: Optional[int] = None
+    location: dict[str, Any]  # row, column
+    end_location: dict[str, Any] | None = None
+    fix: dict[str, Any] | None = None
+    noqa_row: int | None = None
 
 
 @dataclass
@@ -40,9 +42,9 @@ class RuffIntegration:
 
     def __init__(
         self,
-        paths: Optional[list[str]] = None,
-        args: Optional[list[str]] = None,
-        cwd: Optional[str] = None,
+        paths: list[str] | None = None,
+        args: list[str] | None = None,
+        cwd: str | None = None,
         timeout: int = 60,
     ):
         self.paths = paths or ["."]
@@ -88,7 +90,7 @@ class RuffIntegration:
                 tool="ruff (not found)",
             )
 
-    def _parse_json_output(self, output: str) -> Optional[RuffReport]:
+    def _parse_json_output(self, output: str) -> RuffReport | None:
         """Parse Ruff JSON output."""
         try:
             data = json.loads(output)
@@ -136,7 +138,11 @@ class RuffIntegration:
     def _parse_fallback(self, output: str, returncode: int) -> LintResults:
         """Fallback parser for non-JSON output."""
         # Count lines as a rough estimate
-        lines = [l for l in output.split("\n") if l.strip() and not l.startswith("Found")]
+        lines = [
+            line
+            for line in output.split("\n")
+            if line.strip() and not line.startswith("Found")
+        ]
         error_count = len(lines)
 
         return LintResults(

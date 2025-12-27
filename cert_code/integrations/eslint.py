@@ -4,10 +4,12 @@ ESLint integration for cert-code.
 Provides detailed parsing of ESLint output.
 """
 
+from __future__ import annotations
+
 import json
 import subprocess
 from dataclasses import dataclass
-from typing import Optional
+from typing import Any
 
 from cert_code.models import LintResults
 
@@ -16,26 +18,26 @@ from cert_code.models import LintResults
 class EslintMessage:
     """A single ESLint message."""
 
-    ruleId: Optional[str]
+    rule_id: str | None  # ruleId in JSON
     severity: int  # 1 = warning, 2 = error
     message: str
     line: int
     column: int
-    endLine: Optional[int] = None
-    endColumn: Optional[int] = None
-    fix: Optional[dict] = None
+    end_line: int | None = None  # endLine in JSON
+    end_column: int | None = None  # endColumn in JSON
+    fix: dict[str, Any] | None = None
 
 
 @dataclass
 class EslintFileResult:
     """ESLint results for a single file."""
 
-    filePath: str
+    file_path: str  # filePath in JSON
     messages: list[EslintMessage]
-    errorCount: int = 0
-    warningCount: int = 0
-    fixableErrorCount: int = 0
-    fixableWarningCount: int = 0
+    error_count: int = 0  # errorCount in JSON
+    warning_count: int = 0  # warningCount in JSON
+    fixable_error_count: int = 0  # fixableErrorCount in JSON
+    fixable_warning_count: int = 0  # fixableWarningCount in JSON
 
 
 @dataclass
@@ -43,10 +45,10 @@ class EslintReport:
     """Complete ESLint report."""
 
     results: list[EslintFileResult]
-    errorCount: int = 0
-    warningCount: int = 0
-    fixableErrorCount: int = 0
-    fixableWarningCount: int = 0
+    error_count: int = 0  # errorCount in JSON
+    warning_count: int = 0  # warningCount in JSON
+    fixable_error_count: int = 0  # fixableErrorCount in JSON
+    fixable_warning_count: int = 0  # fixableWarningCount in JSON
 
 
 class EslintIntegration:
@@ -54,9 +56,9 @@ class EslintIntegration:
 
     def __init__(
         self,
-        paths: Optional[list[str]] = None,
-        args: Optional[list[str]] = None,
-        cwd: Optional[str] = None,
+        paths: list[str] | None = None,
+        args: list[str] | None = None,
+        cwd: str | None = None,
         timeout: int = 60,
     ):
         self.paths = paths or ["."]
@@ -102,7 +104,7 @@ class EslintIntegration:
                 tool="eslint (not found)",
             )
 
-    def _parse_json_output(self, output: str) -> Optional[EslintReport]:
+    def _parse_json_output(self, output: str) -> EslintReport | None:
         """Parse ESLint JSON output."""
         try:
             data = json.loads(output)
@@ -118,13 +120,13 @@ class EslintIntegration:
                 for msg in file_result.get("messages", []):
                     messages.append(
                         EslintMessage(
-                            ruleId=msg.get("ruleId"),
+                            rule_id=msg.get("ruleId"),
                             severity=msg.get("severity", 1),
                             message=msg.get("message", ""),
                             line=msg.get("line", 0),
                             column=msg.get("column", 0),
-                            endLine=msg.get("endLine"),
-                            endColumn=msg.get("endColumn"),
+                            end_line=msg.get("endLine"),
+                            end_column=msg.get("endColumn"),
                             fix=msg.get("fix"),
                         )
                     )
@@ -134,12 +136,12 @@ class EslintIntegration:
 
                 results.append(
                     EslintFileResult(
-                        filePath=file_result.get("filePath", ""),
+                        file_path=file_result.get("filePath", ""),
                         messages=messages,
-                        errorCount=file_errors,
-                        warningCount=file_warnings,
-                        fixableErrorCount=file_result.get("fixableErrorCount", 0),
-                        fixableWarningCount=file_result.get("fixableWarningCount", 0),
+                        error_count=file_errors,
+                        warning_count=file_warnings,
+                        fixable_error_count=file_result.get("fixableErrorCount", 0),
+                        fixable_warning_count=file_result.get("fixableWarningCount", 0),
                     )
                 )
 
@@ -150,10 +152,10 @@ class EslintIntegration:
 
             return EslintReport(
                 results=results,
-                errorCount=total_errors,
-                warningCount=total_warnings,
-                fixableErrorCount=total_fixable_errors,
-                fixableWarningCount=total_fixable_warnings,
+                error_count=total_errors,
+                warning_count=total_warnings,
+                fixable_error_count=total_fixable_errors,
+                fixable_warning_count=total_fixable_warnings,
             )
 
         except (json.JSONDecodeError, KeyError):
@@ -180,18 +182,18 @@ class EslintIntegration:
                 if msg.severity == 2:  # Error
                     errors.append(
                         {
-                            "file": file_result.filePath,
+                            "file": file_result.file_path,
                             "line": msg.line,
                             "column": msg.column,
-                            "code": msg.ruleId,
+                            "code": msg.rule_id,
                             "message": msg.message,
                         }
                     )
 
         return LintResults(
-            passed=report.errorCount == 0,
-            error_count=report.errorCount,
-            warning_count=report.warningCount,
+            passed=report.error_count == 0,
+            error_count=report.error_count,
+            warning_count=report.warning_count,
             errors=errors[:50],
             tool="eslint",
         )

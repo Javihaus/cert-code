@@ -14,7 +14,7 @@ import json
 import re
 import subprocess
 from dataclasses import dataclass
-from typing import Optional
+from typing import Callable
 
 from cert_code.models import TestResults
 
@@ -59,10 +59,10 @@ DEFAULT_TEST_RUNNERS: dict[str, TestRunnerConfig] = {
 
 
 def run_tests(
-    command: Optional[str] = None,
-    language: Optional[str] = None,
+    command: str | None = None,
+    language: str | None = None,
     timeout: int = 300,
-    cwd: Optional[str] = None,
+    cwd: str | None = None,
 ) -> TestResults:
     """
     Run tests and parse results.
@@ -100,7 +100,9 @@ def run_tests(
         output = result.stdout + "\n" + result.stderr
         returncode = result.returncode
     except subprocess.TimeoutExpired as e:
-        output = f"Test timeout after {timeout}s\n{e.stdout or ''}\n{e.stderr or ''}"
+        stdout = e.stdout.decode() if isinstance(e.stdout, bytes) else (e.stdout or "")
+        stderr = e.stderr.decode() if isinstance(e.stderr, bytes) else (e.stderr or "")
+        output = f"Test timeout after {timeout}s\n{stdout}\n{stderr}"
         returncode = -1
     except FileNotFoundError:
         return TestResults(
@@ -116,8 +118,8 @@ def run_tests(
         )
 
     # Parse results
-    parser = _get_parser(framework)
-    return parser(output, returncode, framework)
+    parser_func = _get_parser(framework)
+    return parser_func(output, returncode, framework)
 
 
 def parse_pytest(output: str, returncode: int, framework: str) -> TestResults:
@@ -287,9 +289,12 @@ def _detect_test_command() -> tuple[list[str], str]:
     return ["pytest", "--tb=short", "-q"], "pytest"
 
 
-def _get_parser(framework: str):
+TestParserFunc = Callable[[str, int, str], TestResults]
+
+
+def _get_parser(framework: str) -> TestParserFunc:
     """Get parser function for framework."""
-    parsers = {
+    parsers: dict[str, TestParserFunc] = {
         "pytest": parse_pytest,
         "jest": parse_jest,
         "npm": parse_jest,  # npm test usually runs jest

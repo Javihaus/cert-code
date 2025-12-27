@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import Optional
 
 from cert_code.models import CodeArtifact, DiffStats, Language
 
@@ -66,7 +65,7 @@ class DiffFile:
     """A single file within a diff."""
 
     path: str
-    old_path: Optional[str]
+    old_path: str | None
     additions: int
     deletions: int
     content: str
@@ -131,7 +130,7 @@ def detect_primary_language(files: list[str]) -> Language:
     return max(language_counts, key=language_counts.get)  # type: ignore
 
 
-def parse_diff(diff: str, language: Optional[Language] = None) -> CodeArtifact:
+def parse_diff(diff: str, language: Language | None = None) -> CodeArtifact:
     """
     Parse a unified diff into a CodeArtifact.
 
@@ -195,8 +194,8 @@ def extract_added_content(diff: str) -> str:
 
 def get_diff_from_git(
     ref: str = "HEAD",
-    base_ref: Optional[str] = None,
-    paths: Optional[list[str]] = None,
+    base_ref: str | None = None,
+    paths: list[str] | None = None,
 ) -> str:
     """
     Get diff from git repository.
