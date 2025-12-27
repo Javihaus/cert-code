@@ -2,9 +2,9 @@
 <img src="docs/logo_cert_a_v3.png" alt="CERT" width="20%" />
 </div>
 
-# CERT SDK
+# CERT CODE
 
-[![CI](https://github.com/Javihaus/cert-code/actions/workflows/ci.yml/badge.svg)](https://github.com/Javihaus/cert-sdk/actions/workflows/ci.yml)
+[![CI](https://github.com/Javihaus/cert-code/actions/workflows/ci.yml/badge.svg)](https://github.com/Javihaus/cert-code/actions/workflows/ci.yml)
 [![PyPI version](https://badge.fury.io/py/cert-sdk.svg)](https://badge.fury.io/py/cert-code)
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
