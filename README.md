@@ -1,5 +1,5 @@
 <div align="center">
-<img src="docs/logo_cert_a_v3.png" alt="CERT" width="20%" />
+<img src="docs/cert_icon4.svg" alt="CERT" width="20%" />
 </div>
 
 # CERT CODE
