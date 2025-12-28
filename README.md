@@ -441,11 +441,3 @@ pytest
 Apache 2.0 — See [LICENSE](LICENSE)
 
 ---
-
-<div align="center">
-
-[CERT Framework](https://cert-framework.dev) |
-[Documentation](https://cert-framework.dev/docs) |
-[SGI Paper](https://arxiv.org/abs/2512.13771)
-
-</div>
